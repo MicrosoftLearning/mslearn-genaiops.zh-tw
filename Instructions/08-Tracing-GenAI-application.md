@@ -1,9 +1,9 @@
 ---
 lab:
-  title: 監視您的生成式 AI 應用程式
+  title: 使用追蹤來分析和偵錯您的生成式 AI 應用程式
 ---
 
-# 監視您的生成式 AI 應用程式
+# 使用追蹤來分析和偵錯您的生成式 AI 應用程式
 
 本練習大約需要 **30** 分鐘的時間。
 
@@ -11,9 +11,11 @@ lab:
 
 ## 簡介
 
-在本練習中，您將啟用對聊天完成應用程式的監視並在 Azure 監視器中檢視其效能。 您可以與已部署的模型進行互動以產生資料，透過生成式 AI 應用程式儀表板深入解析檢視產生的資料，並設定警示以幫助最佳化模型部署。
+在此練習中，您將執行多步驟的生成式 AI 助理，為您的徒步旅行提供建議，並建議戶外裝備。 您將使用 Azure AI 推斷 SDK 的追蹤功能來分析應用程式執行方式，並識別模型和周圍邏輯所做出的關鍵決策點。
 
-## 1. 設定環境
+您將與已部署的模型互動，模擬真實的使用者旅程圖、追蹤應用程式的每個階段，從使用者輸入到模型回應到後續處理，并檢視 Azure AI Foundry 中的追蹤資料。 這可協助您理解追蹤如何增強可檢視性、簡化偵錯，並支援生成式 AI 應用程式的效能最佳化。
+
+## 設定環境
 
 若要完成本練習中的工作，您需要：
 
@@ -22,7 +24,7 @@ lab:
 - 已部署的模型（例如 GPT-4o）；
 - 已連線的 Application Insights 資源。
 
-### A. 建立 AI Foundry 中樞與專案
+### 建立 AI Foundry 中樞與專案
 
 若要快速設定中樞和專案，以下提供使用 Azure AI Foundry 入口網站 UI 的簡單指示。
 
@@ -39,7 +41,7 @@ lab:
     1. 檢閱並選取 [建立]****。
 1. **請等候部署完成**（大約 1-2 分鐘）。
 
-### B. 部署模型
+### 部署模型
 
 若要產生您可以監視的資料，您必須先部署模型並與其互動。 指示會要求您部署 GPT-4o 模型，但**您可以使用 Azure OpenAI 服務集合中可供您使用的任何模型**。
 
@@ -50,9 +52,9 @@ lab:
 
 中樞和專案已就緒，並會自動佈建所有必要的 Azure 資源。
 
-### C. 連接 Application Insights
+### 連接 Application Insights
 
-將 Application Insights 連線到 Azure AI Foundry 中的專案，開始收集資料並監視。
+將 Application Insights 連線到 Azure AI Foundry 中的專案，開始收集用於分析的資料。
 
 1. 在 Azure AI Foundry 入口網站中打開您的專案。
 1. 使用左側的功能表，然後選取 [追蹤]**** 頁面。
@@ -61,13 +63,13 @@ lab:
 
 Application Insights 現在已連線到您的專案，並開始收集資料以進行分析。
 
-## 2. 與已部署的模型互動
+## 使用 Cloud Shell 執行生成式 AI 應用程式
 
-您將使用 Azure Cloud Shell 設定與 Azure AI Foundry 專案的連線，以程式設計方式與已部署的模型互動。 這可讓您將提示傳送至模型並產生監視資料。
+您將從 Azure Cloud Shell 連線到 Azure AI Foundry 專案，並作為生成式 AI 應用程式的一部分，以程式設計方式與已部署的模型互動。
 
-### A. 透過 Cloud Shell 與模型連線
+### 與已部署的模型互動
 
-首先，擷取為了與您的模型互動而要驗證的必要資訊。 然後，您將存取 Azure Cloud Shell 並更新設定，以將提供的提示傳送至您自己的已部署模型。
+首先，擷取為了與您的模型互動而要驗證的必要資訊。 然後，您將存取 Azure Cloud Shell，並更新您的生成式 AI 應用程式的代碼。
 
 1. 在 Azure AI Foundry 入口網站中，檢視專案的**概觀**頁面。
 1. 在 [專案詳細資料]**** 區域中，記下 [專案連接字串]****。
@@ -82,7 +84,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 1. 在 Cloud Shell 窗格中，輸入並執行下列命令：
 
     ```
-    rm -r mslearn-ai-foundry -f
+    rm -r mslearn-genaiops -f
     git clone https://github.com/microsoftlearning/mslearn-genaiops mslearn-genaiops
     ```
 
@@ -91,7 +93,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 1. 複製存放庫之後，瀏覽至包含應用程式碼檔案的資料夾：  
 
     ```
-   cd mslearn-ai-foundry/Files/07
+   cd mslearn-genaiops/Files/08
     ```
 
 1. 在 Cloud Shell 命令列窗格中，輸入下列命令來安裝您需要的程式庫：
@@ -117,132 +119,257 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 
 1. 替換預留位置*之後*，請在程式碼編輯器中使用 **CTRL+S** 命令或**按右鍵 > [儲存]** 來**儲存變更**。
 
-### B. 將提示傳送至已部署的模型
+### 更新您的生成式 AI 應用程式的代碼
 
-您現在會執行多個指令碼，將不同的提示傳送至已部署的模型。 這些互動會產生稍後可在 Azure 監視器中觀察的資料。
+現在您的環境已設定，且已設定 .env 檔案，現在可以準備 AI 助理指令碼來執行。 在與 AI 專案連線並啟用 Application Insights 旁邊，您需要：
 
-1. 執行下列命令以**檢視已提供的第一個指令碼**：
+- 與已部署的模型互動
+- 定義函式以指定您的提示。
+- 定義呼叫所有函式的主要流程。
+
+您會將這三個部分新增至起始指令碼。
+
+1. 執行下列命令以**開啟已提供的指令碼**：
 
     ```
    code start-prompt.py
     ```
 
+    您會看到數個索引鍵行已保留空白字元或標示為空白 # 註解。 您的工作是將下列正確行複製並貼到適當的位置，以完成指令碼。
+
+1. 在指令碼中，尋找 **#函式来呼叫模型并控制代碼追蹤**。
+1. 在此註解下方，貼上下列代碼：
+
+    ```
+   def call_model(system_prompt, user_prompt, span_name):
+        with tracer.start_as_current_span(span_name) as span:
+            span.set_attribute("session.id", SESSION_ID)
+            span.set_attribute("prompt.user", user_prompt)
+            start_time = time.time()
+    
+            response = chat_client.complete(
+                model=model_name,
+                messages=[SystemMessage(system_prompt), UserMessage(user_prompt)]
+            )
+    
+            duration = time.time() - start_time
+            output = response.choices[0].message.content
+            span.set_attribute("response.time", duration)
+            span.set_attribute("response.tokens", len(output.split()))
+            return output
+    ```
+
+1. 在指令碼中，尋找 **# 函式，以根據使用者喜好設定**推薦徒步。
+1. 在此註解下方，貼上下列代碼：
+
+    ```
+   def recommend_hike(preferences):
+        with tracer.start_as_current_span("recommend_hike") as span:
+            prompt = f"""
+            Recommend a named hiking trail based on the following user preferences.
+            Provide only the name of the trail and a one-sentence summary.
+            Preferences: {preferences}
+            """
+            response = call_model(
+                "You are an expert hiking trail recommender.",
+                prompt,
+                "recommend_model_call"
+            )
+            span.set_attribute("hike_recommendation", response.strip())
+            return response.strip()
+    ```
+
+1. 在指令碼中，找出 **#---- Main Flow ----**。
+1. 在此註解下方，貼上下列代碼：
+
+    ```
+   if __name__ == "__main__":
+       with tracer.start_as_current_span("trail_guide_session") as session_span:
+           session_span.set_attribute("session.id", SESSION_ID)
+           print("\n--- Trail Guide AI Assistant ---")
+           preferences = input("Tell me what kind of hike you're looking for (location, difficulty, scenery):\n> ")
+
+           hike = recommend_hike(preferences)
+           print(f"\n✅ Recommended Hike: {hike}")
+
+           # Run profile function
+
+
+           # Run match product function
+
+
+           print(f"\n🔍 Trace ID available in Application Insights for session: {SESSION_ID}")
+    ```
+
+1. **儲存您在指令碼中所做的變更**。
 1. 在程式碼編輯器下的 Cloud Shell 命令列窗格中，輸入下列命令來**執行指令碼**：
 
     ```
    python start-prompt.py
     ```
 
-    模型會產生回應，這會使用 Application Insights 擷取以進一步分析。 讓我們改變提示來探索其效果。
-
-1. **開啟並檢閱指令碼**，其中提示會指示模型**只回答一個句子和清單**：
+1. 提供您要尋找之徒步旅行類型的一些描述，例如：
 
     ```
-   code short-prompt.py
+   A one-day hike in the mountains
     ```
 
-1. 在命令列中輸入下列命令，以**執行指令碼**：
-
-    ```
-   python short-prompt.py
-    ```
-
-1. 下一個指令碼有類似的目標，但包含**系統訊息**中輸出的指示，而不是使用者訊息：
-
-    ```
-   code system-prompt.py
-    ```
-
-1. 在命令列中輸入下列命令，以**執行指令碼**：
-
-    ```
-   python system-prompt.py
-    ```
-
-1. 最後，讓我們嘗試執行含有**太多權杖**的提示來觸發錯誤：
-
-    ```
-   code error-prompt.py
-    ```
-
-1. 在命令列中輸入下列命令，以**執行指令碼**。 請注意，您**很可能遇到錯誤！**
-
-    ```
-   python error-prompt.py
-    ```
-
-既然您已與模型互動，您可以檢閱 Azure 監視器中的資料。
+    模型會產生回應，這會使用 Application Insights 擷取以進一步分析。 您可以在** Azure AI Foundry 入口網站中**進行視覺化追蹤。
 
 > **注意**：監視資料可能需要幾分鐘的時間才會顯示在 Azure 監視器中。
 
-## 4. 檢視 Azure 監視器中的監視資料
+## 在 Azure AI Foundry 入口網站中檢視追蹤資料
 
-若要檢視從模型互動收集的資料，您將存取連結到 Azure 監視器中活頁簿的儀表板。
+執行指令碼後，您擷取了 AI 應用程式的執行追蹤。 現在您將使用 Azure AI Foundry 中的 Application Insights 來探索。
 
-### A. 從 Azure AI Foundry 入口網站瀏覽至 Azure 監視器
+> **備註：** 稍後，您將再次執行代碼，並在 Azure AI Foundry 入口網站中再次檢視追蹤。 讓我們先探索在哪裡尋找視覺化追蹤。
 
+### 瀏覽至 Azure AI Foundry 入口網站
+
+1. **讓 Cloud Shell 保持開啟！** 您將返回此代碼，以更新代碼並再次執行。
 1. 在開啟 **Azure AI Foundry 入口網站**的情況下，瀏覽至瀏覽器中的索引標籤。
 1. 使用左側功能表，選取 [追蹤]****。
-1. 選取頂端指出 [查看您的生成式 AI 應用程式儀表板深入解析]**** 的連結。 此連結會在新的索引標籤中開啟 Azure 監視器。
-1. 檢閱**概觀**，提供與已部署模型互動的摘要資料。
+1. *如果* 未顯示任何資料，請 **重新整理** 您的檢視。
+1. 選取追蹤 **train_guide_session** 開啟顯示更多詳細資料的新視窗。
 
-## 5. 解譯 Azure 監視器中的監視計量
+### 檢閱您的追蹤。
 
-現在是時候深入探討資料，並開始解譯它告訴您的內容。
+此檢視表會顯示「軌跡指南 AI 助理」完整會話的跡數。
 
-### A. 檢閱權杖使用方式
+- **最上層範圍**：trail_guide_session。這是父範圍。 它代表您助理將全部執行，從開始到完成。
 
-首先關注**權杖使用方式**章節並檢閱以下指標：
+- **巢狀子範圍**：每個縮排行都代表巢狀作業。 您會發現：
 
-- **提示權杖**：所有模型呼叫中輸入（您傳送的提示）中使用的權杖總數。
+    - **建議_徒步**，它捕捉到你的邏輯來決定徒步旅行。
+    - ** recommend_model_call**，這是 recommend_hike 內 call_model（） 所建立的跨度。
+    - **chat gpt-4o** ，由 Azure AI 推斷 SDK 自動檢測，以顯示實際的 LLM 互動。
 
-> 可以將其視為向模型*提出*問題的成本。
+1. 您可以按一下任何範圍來檢視：
 
-- **完成權杖**：模型作為輸出返回的權杖數，本質上是回應的長度。
+    1. 時間長度。
+    1. 其屬性，例如使用者提示、使用權杖、回應時間。
+    1. 附加** span.set_attribute（...）** 的任何錯誤或自定義資料。
 
-> 產生的完成權杖通常代表大部分權杖使用情況和成本，特別是對於長或冗長的答案。
+## 將更多函式新增至您的代碼
 
-- **總權杖數**：提示權杖和完成權杖的總和。
 
-> 計費和效能的最重要指標，因為它會導致延遲和成本。
+1. 輸入下列命令**重新開啟此指令碼**：
 
-- **總呼叫次數**：單獨推理請求的數量，即模型被呼叫的次數。
+    ```
+   code start-prompt.py
+    ```
 
-> 有助於分析輸送量和瞭解每次呼叫的平均成本。
+1. 在指令碼中，尋找 **# 函式為建議的徒步旅行產生旅行個人檔案**。
+1. 在此註解下方，貼上下列代碼：
 
-### B. 比較個別提示
+    ```
+   def generate_trip_profile(hike_name):
+       with tracer.start_as_current_span("trip_profile_generation") as span:
+           prompt = f"""
+           Hike: {hike_name}
+           Respond ONLY with a valid JSON object and nothing else.
+           Do not include any intro text, commentary, or markdown formatting.
+           Format: {{ "trailType": ..., "typicalWeather": ..., "recommendedGear": [ ... ] }}
+           """
+           response = call_model(
+               "You are an AI assistant that returns structured hiking trip data in JSON format.",
+               prompt,
+               "trip_profile_model_call"
+           )
+           print("🔍 Raw model response:", response)
+           try:
+               profile = json.loads(response)
+               span.set_attribute("profile.success", True)
+               return profile
+           except json.JSONDecodeError as e:
+               print("❌ JSON decode error:", e)
+               span.set_attribute("profile.success", False)
+               return {}
+    ```
 
-向下捲動以找到 **Gen AI Spans**，它以表格形式顯示，其中每個提示都表示為一行新資料。 檢閱並比較以下欄的內容：
+1. 在指令碼中，尋找 **# 函式，以符合目錄中產品的推薦項目齒輪圖**。
+1. 在此註解下方，貼上下列代碼：
 
-- **狀態**：模型呼叫成功或失敗。
+    ```
+   def match_products(recommended_gear):
+       with tracer.start_as_current_span("product_matching") as span:
+           matched = []
+           for gear_item in recommended_gear:
+               for product in mock_product_catalog:
+                   if any(word in product.lower() for word in gear_item.lower().split()):
+                       matched.append(product)
+                       break
+           span.set_attribute("matched.count", len(matched))
+           return matched
+    ```
 
-> 使用此項目來識別有問題的提示或設定錯誤。 最後一個提示可能失敗，因為提示太長。
+1. 在指令碼中，找出 **#執行設定檔函式**。
+1. 在下方**對齊**此註解，貼上下列代碼：
 
-- **持續時間**：顯示模型回應所花費的時間，以毫秒為單位。
+    ```
+           profile = generate_trip_profile(hike)
+           if not profile:
+           print("Failed to generate trip profile. Please check Application Insights for trace.")
+           exit(1)
 
-> 跨列比較以探索哪些提示模式會導致更長的處理時間。
+           print(f"\n📋 Trip Profile for {hike}:")
+           print(json.dumps(profile, indent=2))
+    ```
 
-- **輸入**：顯示傳送至模型的使用者訊息。
+1. 在指令碼中，尋找 **#執行符合產品函式**。
+1. 在下方**對齊**此註解，貼上下列代碼：
 
-> 使用此欄來評估哪些提示公式是有效的或有問題的。公式
+    ```
+           matched = match_products(profile.get("recommendedGear", []))
+           print("\n🛒 Recommended Products from Lakeshore Retail:")
+           print("\n".join(matched))
+    ```
 
-- **系統**：顯示提示中使用的系統訊息（如果有的話）。
+1. **儲存您在指令碼中所做的變更**。
+1. 在程式碼編輯器下的 Cloud Shell 命令列窗格中，輸入下列命令來**執行指令碼**：
 
-> 比較項目以評估使用或變更系統訊息的影響。
+    ```
+   python start-prompt.py
+    ```
 
-- **輸出**：包含模型的回應。
+1. 提供您要尋找之徒步旅行類型的一些描述，例如：
 
-> 使用它來評估詳細程度、相關性和一致性。 特別是在權杖計數和持續時間方面。
+    ```
+   I want to go for a multi-day adventure along the beach
+    ```
 
-## 6. （選擇性） 建立警示
+> **注意**：監視資料可能需要幾分鐘的時間才會顯示在 Azure 監視器中。
 
-如果您有額外的時間，請嘗試設定警示，以在模型延遲超過特定閾值時通知您。 這是一項旨在挑戰您的練習，這意味著說明故意不太詳細。
+### 在 Azure AI Foundry 入口網站中檢視新的追蹤
 
-- 在 Azure 監視器中，為您的 Azure AI Foundry 專案和模型建立**新的警示規則**。
-- 選擇一個指標，例如**請求時長（毫秒）**，並定義一個閾值（例如，大於 4000 毫秒）。
-- 建立**新的動作群組** ，以定義您將如何收到通知。
+1. 瀏覽回 Azure AI Foundry 入口網站。
+1. 應該會出現名稱相同 **trail_guide_session** 的新追蹤。 如有必要，請重新整理檢視。
+1. 選取新的追蹤以開啟更詳細的檢視。
+1. 檢閱新的巢狀子範圍 **trip_profile_generation** 和 **product_matching**。
+1. 選取 **product_matching** 並檢閱出現的中繼資料。
 
-警示透過建立主動監視幫助您做好生產準備。 您設定的警示將取決於您的專案的優先順序以及您的團隊決定如何衡量和減輕風險。
+    在 product_matching 函式中，包含**span.set_attribute（“matched.count”， len（matched））。** 藉由機碼值組**matched.count** 和變數相符的長度來設定 屬性，即可將這項資訊新增至 **product_matching** 追蹤。 您可以在中繼資料中的**屬性**找到這個機碼值組。
+
+## （選用）追蹤錯誤
+
+如果您有額外的時間，您可以檢閱在發生錯誤時如何使用追蹤。 可能會向您提供擲回的錯誤指令碼。 執行它並檢閱追蹤。
+
+這是一項旨在挑戰您的練習，這意味著說明故意不太詳細。
+
+1. 在 Cloud Shell 中，開啟 **error-prompt.py** 指令碼。 此指令碼位於與** start-prompt.py **指令碼相同的目錄中。 檢閱內容。
+1. 執行** error-prompt.py** 指令碼。 出現提示時，在命令行中提供答案。
+1. *希望*，輸出訊息包含**無法產生旅程設定檔。請檢查 Application Insights 以取得追蹤。**。
+1. 瀏覽至** trip_profile_generation**追蹤，並檢查發生錯誤的原因。
+
+<br>
+<details>
+<summary><b>取得答案</b>：為什麼您遇到錯誤...</summary><br>
+<p>如果您檢查 generate_trip_profile 函式的 LLM 追蹤，您會發現助理回應包含倒引號和 JSON 一詞，以將輸出格式化為程式碼區塊。
+
+雖然這有助於顯示，但它會導致代碼問題，因為輸出已不再為有效 JSON。 這會導致進一步處理期間發生剖析錯誤。
+
+此錯誤可能是由 LLM 指示遵循其輸出的特定格式所造成。 在使用者提示中包含指示會比在系統提示中更有效。</p>
+</details>
 
 ## 哪裡可以找到其他實驗室
 
