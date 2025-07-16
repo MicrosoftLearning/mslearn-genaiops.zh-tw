@@ -85,7 +85,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 1. 在 Cloud Shell 窗格中，輸入並執行下列命令：
 
     ```
-    rm -r mslearn-ai-foundry -f
+    rm -r mslearn-genaiops -f
     git clone https://github.com/microsoftlearning/mslearn-genaiops mslearn-genaiops
     ```
 
@@ -94,7 +94,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 1. 複製存放庫之後，瀏覽至包含應用程式碼檔案的資料夾：  
 
     ```
-   cd mslearn-ai-foundry/Files/07
+   cd mslearn-genaiops/Files/07
     ```
 
 1. 在 Cloud Shell 命令列窗格中，輸入下列命令來安裝您需要的程式庫：
