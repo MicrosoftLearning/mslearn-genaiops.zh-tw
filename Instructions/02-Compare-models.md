@@ -1,6 +1,7 @@
 ---
 lab:
   title: 從模型目錄選取語言模型。
+  description: 了解如何比較並選取適用於您生成式 AI 專案的適當模型。
 ---
 
 ## 從模型目錄選取語言模型。
@@ -9,7 +10,7 @@ lab:
 
 在這份練習中，您可以透過 Azure AI Foundry 入口網站中的模型目錄，比較兩種語言模型。
 
-此練習大約需要 **25** 分鐘。
+此練習大約需要 **30** 分鐘。
 
 ## 案例
 
@@ -31,6 +32,10 @@ lab:
 
     > **注意**：如果您之前建立了使用 *Bash* 環境的 Cloud Shell，請將其切換到 ***PowerShell***。
 
+1. 在 Cloud Shell 工具列中，在 [設定]**** 功能表中，選擇 [移至傳統版本]****。
+
+    **<font color="red">繼續之前，請先確定您已切換成 Cloud Shell 傳統版本。</font>**
+
 1. 在 PowerShell 窗格中，輸入以下命令來複製此練習的存放庫：
 
      ```powershell
@@ -50,7 +55,7 @@ lab:
 1. 接下來，輸入下列命令以執行入門範本。 它會佈建具有相依資源的 AI 中樞、AI 專案、AI 服務和線上端點。 它也會部署 GPT-4 Turbo、GPT-4o 和 GPT-4o mini 模型。
 
      ```powershell
-    azd up  
+    azd up
      ```
 
 1. 出現提示時，請選擇您想要使用的訂用帳戶，然後選擇下列其中一個位置來進行資源佈建：
@@ -78,20 +83,11 @@ lab:
         </ul>
     </details>
 
-1. 佈建所有資源之後，請使用下列命令來擷取端點和 AI 服務資源的存取金鑰。 請注意，您必須以您的資源群組和 AI 服務資源名稱取代 `<rg-env_name>` 和 `<aoai-xxxxxxxxxx>`。 這兩者都會列印在部署的輸出中。
-
-     ```powershell
-    Get-AzCognitiveServicesAccount -ResourceGroupName <rg-env_name> -Name <aoai-xxxxxxxxxx> | Select-Object -Property endpoint
-    Get-AzCognitiveServicesAccountKey -ResourceGroupName <rg-env_name> -Name <aoai-xxxxxxxxxx> | Select-Object -Property Key1
-     ```
-
-1. 複製這些值，因為稍後會使用這些值。
-
 ## 比較模型
 
 您知道，有三種接受影像作為輸入的模型，據推斷，基礎結構完全受控於 Azure。 目前您必須比較看看，才能確定哪一種最適合我們的使用案例。
 
-1. 請在網頁瀏覽器中，開啟 [Azure AI Foundry 入口網站](https://ai.azure.com)，再於`https://ai.azure.com` 時使用您的 Azure 認證完成登入。
+1. 在新的瀏覽器索引標籤中，於 `https://ai.azure.com` 開啟 [Azure AI Foundry 入口網站](https://ai.azure.com)，然後使用您的 Azure 認證登入。
 1. 如果出現提示，請選取之前建立的 AI 專案。
 1. 使用左側的功能表，瀏覽至 **[模型目錄]** 頁面。
 1. 選取 **[比較模型]**（請在搜尋窗格中，尋找篩選條件旁的按鈕）。
@@ -107,14 +103,95 @@ lab:
 
 主要會根據公開可用的通用資料集，計算基準衡量標準的正確性。 我們已經可以從圖中篩選掉其中某一個模型，原因是每種權杖的成本最高，正確性卻不一定最高。 做出決定之前，先讓我們先探討一下，怎樣針對您的使用案例，列出剩餘兩種模型的輸出品質。
 
-## 設定本機開發環境
+## 在 Cloud Shell 中設定您的開發環境
 
-若要快速實驗並反覆執行，您將使用附有 Visual Studio (VS) Code 中的 Python 程式碼的筆記本。 準備好將 VS Code 用於本機構想。
+若要快速實驗並逐一查看，您需要在 Cloud Shell 中使用一組 Python 指令碼。
 
-1. 開啟 VS Code 並**複製**下列 Git 存放庫：[https://github.com/MicrosoftLearning/mslearn-genaiops.git](https://github.com/MicrosoftLearning/mslearn-genaiops.git)
-1. 將複製品儲存在本機磁碟機上，並在複製之後開啟資料夾。
-1. 請在 VS Code Explorer（左側窗格）中，開啟 **02-Compare-models.ipynb** 中的筆記本，存放在 **Files/02** 資料夾中。
-1. 執行筆記本中的所有儲存格。
+1. 在 Azure AI Foundry 入口網站中，檢視專案的**概觀**頁面。
+1. 在 [專案詳細資料]**** 區域中，記下 [專案連接字串]****。
+1. 將字串儲存在記事本中。 您將使用此連接字串連線到用戶端應用程式中的專案。
+1. 返回 [Azure 入口網站] 索引標籤，如果您先前關閉了 Cloud Shell，則會開啟 Cloud Shell，並執行下列命令以瀏覽至資料夾，該資料夾中包含此練習中使用的程式代碼檔案：
+
+     ```powershell
+    cd ~/mslearn-genaiops/Files/02/
+     ```
+
+1. 在 Cloud Shell 命令列窗格中，輸入下列命令來安裝您需要的程式庫：
+
+    ```powershell
+   python -m venv labenv
+   ./labenv/bin/Activate.ps1
+   pip install python-dotenv azure-identity azure-ai-projects openai matplotlib
+    ```
+
+1. 輸入以下命令，開啟已提供的設定檔：
+
+    ```powershell
+   code .env
+    ```
+
+    程式碼編輯器中會開啟檔案。
+
+1. 在程式代碼檔案中，將 **your_project_connection_string** 預留位置取代為您專案的連接字串 (從 Azure AI Foundry 入口網站中的專案 [概觀]**** 頁面複製)。 觀察練習中使用的第一個和第二個模型，分別是 **gpt-4o** 和 **gpt-4o-mini**。
+1. *取代預留位置後*，在程式碼編輯器中使用 **CTRL+S** 命令或**以滑鼠右鍵按一下 > [儲存]** 來儲存變更，然後使用 **CTRL+Q** 命令或**以滑鼠右鍵按一下 > [結束]**，以關閉程式碼編輯器，同時讓 Cloud Shell 命令列保持開啟。
+
+## 將提示傳送至已部署的模型
+
+您現在會執行多個指令碼，將不同的提示傳送至已部署的模型。 這些互動會產生稍後可在 Azure 監視器中觀察的資料。
+
+1. 執行下列命令以**檢視已提供的第一個指令碼**：
+
+    ```powershell
+   code model1.py
+    ```
+
+指令碼會將本練習中使用的影像編碼為資料 URL。 系統會使用此 URL 將影像直接內嵌在聊天完成要求以及第一個文字提示中。 接下來，指令碼會輸出模型的回應，並將其新增至聊天記錄，然後提交第二個提示。 系統會提交並儲存第二個提示，以便讓稍後觀察的計量更為重要。不過您也可以取消程式碼選擇性區段的註解，讓第二個回應作為輸出內容。
+
+1. 在程式碼編輯器下的 Cloud Shell 命令列窗格中，輸入下列命令來執行**第一個**指令碼：
+
+    ```powershell
+   python model1.py
+    ```
+
+    模型會產生回應，這會使用 Application Insights 擷取以進一步分析。 讓我們使用第二個模型來探索其差異。
+
+1. 在程式碼編輯器下的 Cloud Shell 命令列窗格中，輸入下列命令來執行**第二個**指令碼：
+
+    ```powershell
+   python model2.py
+    ```
+
+    現在您已經有這兩個模型的輸出內容，這兩者有什麼不同嗎？
+
+    > **注意**：您可以選擇性地複製程式碼區塊、執行命令 `code your_filename.py`、貼上編輯器中的程式碼、儲存檔案，然後執行命令 `python your_filename.py`，以測試提供作為答案的指令碼。 如果指令碼成功執行，您應該會有可使用 `download imgs/gpt-4o.jpg` 或 `download imgs/gpt-4o-mini.jpg` 下載的已儲存影像。
+
+## 比較模型的權杖使用方式
+
+最後，您將執行第三個指令碼，該指令碼會繪製每個模型經過一段時間後的已處理權杖數目。 此資料是從 Azure 監視器取得。
+
+1. 執行最後一個指令碼之前，您必須從 Azure 入口網站複製 Azure AI 服務的資源識別碼。 移至 Azure AI 服務資源的概觀頁面，然後選取 ****[JSON 檢視]。 複製資源識別碼，並取代程式碼檔案中的 `your_resource_id` 預留位置：
+
+    ```powershell
+   code plot.py
+    ```
+
+1. 儲存您的變更。
+
+1. 在程式碼編輯器下的 Cloud Shell 命令列窗格中，輸入下列命令來執行**第三個**指令碼：
+
+    ```powershell
+   python plot.py
+    ```
+
+1. 指令碼完成後，請輸入下列命令以下載計量繪圖：
+
+    ```powershell
+   download imgs/plot.png
+    ```
+
+## 推論
+
+檢閱繪圖並記住正確性中的基準值與之前所觀察到成本圖表的比較，您是否可以判斷出哪一個模型最適合您的使用案例？ 輸出正確性的差異是否超過所產生權杖中的差異，因此成本應該為何？
 
 ## 清理
 
