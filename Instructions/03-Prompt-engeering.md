@@ -26,9 +26,9 @@ lab:
 
 ### 建立 Azure AI 中樞與專案
 
-> **注意**：如果您已經有 Azure AI 中樞和專案，您可以略過此程序，並使用現有的專案。
+> **注意**：如果您已經有 Azure AI 中樞和專案，您可以跳過此程序，並使用現有的專案。
 
-您可以透過 Azure AI Foundry 入口網站手動建立 Azure AI 中樞和專案，以及部署練習中使用的模型。 不過，您也可以透過使用範本應用程式搭配 [Azure Developer CLI (azd)](https://aka.ms/azd) 來自動化此流程。
+您可以透過 Azure AI Foundry 入口網站手動建立 Azure AI 專案，以及部署練習中使用的模型。 不過，您也可以透過使用範本應用程式搭配 [Azure Developer CLI (azd)](https://aka.ms/azd) 來自動化此流程。
 
 1. 在網頁瀏覽器中，在 `https://portal.azure.com` 開啟 [Azure 入口網站](https://portal.azure.com)，並使用您的 Azure 認證登入。
 
@@ -43,15 +43,15 @@ lab:
     git clone https://github.com/MicrosoftLearning/mslearn-genaiops
      ```
 
-1. 複製存放庫之後，請輸入下列命令來初始化入門範本。 
-   
+1. 複製存放庫之後，請輸入下列命令來初始化入門範本。
+
      ```powershell
     cd ./mslearn-genaiops/Starter
     azd init
      ```
 
 1. 出現提示后，請為新環境指定名稱，因為它將作為為所有佈建資源提供唯一名稱的基礎。
-        
+
 1. 接下來，輸入下列命令以執行入門範本。 它會佈建具有相依資源的 AI 中樞、AI 專案、AI 服務和線上端點。
 
      ```powershell
@@ -66,7 +66,7 @@ lab:
    - 瑞典中部
    - 美國西部
    - 美國西部 3
-    
+
 1. 等候指令碼完成 - 這通常需要大約 10 分鐘的時間，但在某些情況下，需要更長時間。
 
     > **注意**：Azure OpenAI 資源在租用戶等級受到區域配額的限制。 上面列出的區域包括本練習中使用的模型類型的預設配額。 隨機選擇區域可以降低單一區域達到其配額限制的風險。 如果達到配額限制，您可能需要在不同的區域中建立另一個資源群組。 深入了解[每個區域的模型可用性。](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=standard%2Cstandard-chat-completions#global-standard-model-availability)
@@ -91,101 +91,128 @@ lab:
      ```
 
 1. 複製這些值，因為稍後會使用這些值。
-   
-### 設定本機開發環境
 
-若想快速實驗並逐一查看，您將可在 Visual Studio (VS) Code 中，使用 Prompty。 準備好將 VS Code 用於本機構想。
+### 在 Cloud Shell 中設定您的虛擬環境
 
-1. 開啟 VS Code 並**複製**下列 Git 存放庫：[https://github.com/MicrosoftLearning/mslearn-genaiops.git](https://github.com/MicrosoftLearning/mslearn-genaiops.git)
-1. 將複製品儲存在本機磁碟機上，並在複製之後開啟資料夾。
-1. 請在 VS Code 的 [擴充] 窗格中，搜尋並安裝 **Prompty** 擴充功能。
-1. 請在 VS Code Explorer（左邊窗格）中，用滑鼠按右鍵，點兩下 [檔案/03]**** 資料夾。
-1. 請在下拉式功能表中，選取** [新的 Prompty]**。
-1. 開啟剛才建立的檔案，檔名為 **[基本 Prompty]**。
-1. 選取右上角的 **[播放]** 按鈕，（或可按下 F5 鍵），以便執行 Prompty 檔案。
-1. 出現提示時，登入伺服器，選取 **[允許]**。
-1. 選取 Azure 帳戶，然後登入。
-1. 返回 VS Code，會開啟其中的**輸出**窗格，然後顯示錯誤訊息。 錯誤訊息應該告訴您還未指定，或是找不到部署的型號。
+若要快速實驗並逐一查看，您需要在 Cloud Shell 中使用一組 Python 指令碼。
 
-若想修正錯誤，您就必須為 Prompty 設定好想使用的型號。
+1. 在 Cloud Shell 命令行窗格中輸入下列命令，以瀏覽至資料夾，資料夾中包含此練習中使用的程式碼檔案：
 
-## 更新提示的中繼資料
+     ```powershell
+    cd ~/mslearn-genaiops/Files/03/
+     ```
 
-若想執行 Prompty 檔案，您就必須指定語言模型，可用來產生回覆。 中繼資料可定義為 Prompty 檔案的 *frontmatter*。 讓我們使用模型設定和其他資訊，更新中繼資料。
+1. 輸入下列命令來啟動虛擬環境，並安裝您需要的程式庫：
 
-1. 開啟 Visual Studio Code 終端機窗格。
-1. 複製 **basic.prompty** 檔案 （請在相同資料夾中），再將複本重新命名為 `chat-1.prompty`。
-1. 開啟 **chat-1.prompty**，然後更新下列欄位，即可變更某些基本資訊：
-
-    - **Name**：
-
-        ```yaml
-        name: Python Tutor Prompt
-        ```
-
-    - **描述**：
-
-        ```yaml
-        description: A teaching assistant for students wanting to learn how to write and edit Python code.
-        ```
-
-    - **已部署的模型**：
-
-        ```yaml
-        azure_deployment: ${env:AZURE_OPENAI_CHAT_DEPLOYMENT}
-        ```
-
-1. 接下來，請在 **azure_deployment**參數下，預留位置新增 API 金鑰的以下預留位置。
-
-    - **端點金鑰**：
-
-        ```yaml
-        api_key: ${env:AZURE_OPENAI_API_KEY}
-        ```
-
-1. 儲存更新的 Prompty 檔案。
-
-Prompty 檔案現在具有所有必要的參數，但有些參數使用預留位置，方便取得所需的數值。 會將預留位置儲存在相同資料夾中的 **.env**檔案中。
-
-## 更新模型設定
-
-若想指定 Prompty 使用的模型，您就必須在 .env 檔案中，提供型號資訊。
-
-1. 開啟 **.env** 檔案，只要到 **Files/03** 資料夾即可完成。
-1. 使用您之前從 Azure 入口網站中的模型部署輸出那邊複製到的數值，更新每個預留位置：
-
-    ```yaml
-    - AZURE_OPENAI_CHAT_DEPLOYMENT="gpt-4"
-    - AZURE_OPENAI_ENDPOINT="<Your endpoint target URI>"
-    - AZURE_OPENAI_API_KEY="<Your endpoint key>"
+    ```powershell
+   python -m venv labenv
+   ./labenv/bin/Activate.ps1
+   pip install python-dotenv openai tiktoken azure-ai-projects prompty[azure]
     ```
 
-1. 儲存 .env 檔案。
-1. 重新執行 **chat-1.prompty** 檔案。
+1. 輸入以下命令，開啟已提供的設定檔：
 
-您目前應該可以取得 AI 產生的回應，儘管這類回應只是使用樣本輸入，與您的案例無關。 讓我們先更新範本，把範本變成 AI 助教。
-
-## 編輯樣本區段
-
-樣本區段會指定 Prompty 的輸入，會在還沒提供任何輸入時，先提供想要使用的預設值。
-
-1. 編輯下列參數的欄位：
-
-    - **firstName**：選擇任何其他名稱。
-    - **context**：移除整個章節。
-    - **question**：用以下提供的文字來取代：
-
-    ```yaml
-    What is the difference between 'for' loops and 'while' loops?
+    ```powershell
+   code .env
     ```
 
-    目前**樣本**章節看起來應該如下所示：
-    
-    ```yaml
-    sample:
-    firstName: Daniel
-    question: What is the difference between 'for' loops and 'while' loops?
+    程式碼編輯器中會開啟檔案。
+
+1. 在程式碼檔案中，以您稍早複製的端點和金鑰值取代 **ENDPOINTNAME** 和 **APIKEY** 預留位置。
+1. *取代預留位置後*，在程式碼編輯器中使用 **CTRL+S** 命令或**按下滑鼠右鍵 > [儲存]** 來儲存變更，然後使用 **CTRL+Q** 命令或**按下滑鼠右鍵 > [結束]** 來關閉程式碼編輯器，同時保持 Cloud Shell 命令列開啟。
+
+## 將系統提示最佳化
+
+將系統提示的長度減到最小同時維持生成式 AI 中的功能，是大規模部署的基礎。 若提示較短，回應時間就會比較快，因為 AI 模型需要處理的權杖數與使用的運算資源都比較少。
+
+1. 請輸入下列命令，開啟已提供的應用程式檔案：
+
+    ```powershell
+   code optimize-prompt.py
     ```
 
-    1. 執行更新的 Prompty 檔案，同時查看輸出。
+    請檢閱程式碼，並注意指令碼會執行已經預先定義系統提示的 `start.prompty` 範本檔案。
 
+1. 執行 `code start.prompty` 以檢閱系統提示。 請考慮如何縮短提示，同時維持其意圖清晰且有效。 例如：
+
+   ```python
+   original_prompt = "You are a helpful assistant. Your job is to answer questions and provide information to users in a concise and accurate manner."
+   optimized_prompt = "You are a helpful assistant. Answer questions concisely and accurately."
+   ```
+
+   移除多餘的文字，並專注於基本指示。 將經過最佳化的提示儲存在檔案中。
+
+### 測試並驗證您的最佳化提示
+
+測試提示變更很重要，因為這可以確保您減少權杖使用量，同時兼顧品質。
+
+1. 執行 `code token-count.py` 以開啟並檢閱練習中提供的權杖計數器應用程式。 如果您使用的最佳化提示與上述範例所提供提示不同，您也可以在此應用程式中使用。
+
+1. 使用 `python token-count.py` 執行指令碼，並觀察權杖計數器的差異。 確保最佳化提示仍會產生高品質回應。
+
+## 分析使用者互動
+
+了解使用者如何與您的應用程式互動，有助於找出權杖使用量變多的模式。
+
+1. 檢閱使用者提示的範例資料集：
+
+    - **「摘要《戰爭與和平》** 的劇情。」**
+    - **「有哪些與貓相關的有趣事實？」**
+    - **「針對著手使用 AI 最佳化供應鏈，撰寫詳細的商務計畫。」**
+    - **「將『嗨，您好』翻譯成法文。」**
+    - **「向 10 歲的孩童說明量子糾纏」。**
+    - **「給我 10 個科幻短篇故事的創意構想。」**
+
+    分別判斷每個提示可能導致 AI 回應內容**較短**、**中等**或**較長/複雜**。
+
+1. 檢閱您的分類。 您注意到哪些模式？ 請考慮：
+
+    - 提示的**抽象程度** (例如創意與實際間的差異) 會影響回應長度嗎？
+    - **開放式提示**是否會出現較長回應？
+    - **指示複雜程度** (例如「當我是 10 歲孩童那樣解釋」) 對回應長度會造成什麼影響？
+
+1. 輸入下列命令執行 **optimize-prompt** 應用程式：
+
+    ```
+   python optimize-prompt.py
+    ```
+
+1. 使用上面提供的一些範例來驗證您的分析。
+1. 現在，使用下列較長提示，並檢閱輸出結果：
+
+    ```
+   Write a comprehensive overview of the history of artificial intelligence, including key milestones, major contributors, and the evolution of machine learning techniques from the 1950s to today.
+    ```
+
+1. 根據以下要求，重寫這個提示：
+
+    - 限制範圍
+    - 設定對簡潔度的期待
+    - 使用格式或結構來引導回應
+
+1. 比較回應，以驗證您確實得到更簡潔的答案。
+
+> **注意**：您可以使用 `token-count.py` 以比較這兩個回應中的權杖使用量。
+<br>
+<details>
+<summary><b>重寫提示的範例：</b></summary><br>
+<p>「提供 AI 歷程記錄中 5 個關鍵里程碑的重點摘要。」</p>
+</details>
+
+## [**選用**] 在真實案例中套用您的最佳化提示
+
+1. 假設您正在建置客戶支援聊天機器人，該聊天機器人必須提供快速又準確的答案。
+1. 將經過最佳化的系統提示和範本整合到聊天機器人的程式碼 (*您可以使用 `optimize-prompt.py` 做為起點*)。
+1. 使用各種使用者查詢測試聊天機器人，以確保機器人能快速有效的提出回應。
+
+## 推論
+
+提示最佳化是降低成本並提升生成式 AI 應用程式效能的關鍵技能。 您可以縮短提示、使用範本及分析使用者互動，以建立更有效率且可擴充的解決方案。
+
+## 清理
+
+如果您已完成 Azure AI 服務探索，您應該刪除在本練習中建立的資源，以避免產生不必要的 Azure 成本。
+
+1. 返回包含 Azure 入口網站的瀏覽器索引標籤 (或在新的瀏覽器索引標籤中重新開啟 [Azure 入口網站](https://portal.azure.com?azure-portal=true))，並檢視您在其中部署本練習所用資源的資源群組內容。
+1. 在工具列上，選取 [刪除資源群組]****。
+1. 輸入資源群組名稱並確認您想要將其刪除。
