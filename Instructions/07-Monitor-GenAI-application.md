@@ -18,49 +18,30 @@ lab:
 
 若要完成本練習中的工作，您需要：
 
-- Azure AI Foundry 中樞；
 - Azure AI Foundry 專案；
 - 已部署的模型（例如 GPT-4o）；
 - 已連線的 Application Insights 資源。
 
-### 建立 AI Foundry 中樞與專案
+### 在 Azure AI Foundry 專案中部署模型
 
-若要快速設定中樞和專案，以下提供使用 Azure AI Foundry 入口網站 UI 的簡單指示。
+若要快速設定 Azure AI Foundry 專案，以下提供使用 Azure AI Foundry 入口網站 UI 的簡單指示。
 
 1. 在網頁瀏覽器中，開啟 [Azure AI Foundry 入口網站](https://ai.azure.com) 於`https://ai.azure.com` 並使用您的 Azure 認證登入。
-1. 在首頁中，選取 **+ 建立專案**。
-1. 請在** [建立專案**精靈] 中，輸入專案有效名稱。如果建議使用現有的中樞，請先選擇建立新的中樞選項。 然後審查 Azure 資源，將會自動建立，以便支援中樞和專案。
-1. 選取**自訂**，然後為您的中樞指定下列設定：
-    - **中樞名稱**：*請提供有效的中樞名稱*
+1. 在首頁的 [探索模型和功能]**** 區段中搜尋 `gpt-4o` 模型。我們會在專案中使用這個模型。
+1. 在搜尋結果中選取 **gpt-4o** 模型以查看其詳細資料，然後在該模型的頁面頂端選取 [使用此模型]****。
+1. 當系統提示您建立專案時，請輸入您專案的有效名稱，然後展開 [進階選項]****。
+1. 選取 [自訂]****，然後為專案指定下列設定：
+    - **Azure AI Foundry 資源**：*Azure AI Foundry 資源的有效名稱*
     - **訂用帳戶**：您的 Azure 訂用帳戶**
     - **資源群組**：建立或選取資源群組**
-    - **位置**：選取 [協助我選擇]****，然後在 [位置協助程式] 視窗中選取 **gpt-4o**，並使用建議的區域\*
-    - **連接 Azure AI 服務或 Azure OpenAI**：*[建立新的 AI 服務資源]*
-    - **連接 Azure AI 搜尋服務**：跳過連接
+    - **地區**：*選取任何 **AI 服務支援的位置***\*
 
-    > \* Azure OpenAI 資源受區域模型配額限制。 在練習後期，若超過配額限制，您可能需要在不同區域建立另一個資源。
+    > \*部分 Azure AI 資源受區域模型配額限制。 在練習後期，若超過配額限制，您可能需要在不同區域建立另一個資源。
 
-1. 選取**下一步**並檢閱您的設定。 然後選取**建立**並等待該流程完成。
-
-### 部署模型
-
-若要產生您可以監視的資料，您必須先部署模型並與其互動。 指示會要求您部署 GPT-4o 模型，但**您可以使用 Azure OpenAI 服務集合中可供您使用的任何模型**。
-
-1. 使用左側的功能表，在 [我的資產]**** 中，選取 [模型 + 端點]**** 頁面。
-1. 在 [+ 部署模型]**** 功能表中選取 [部署基本模型]****。
-1. 選取清單中的 **gpt-4o** 模型，然後選取部署詳細資料中的 [自訂]****，以下列設定進行部署：
-    - **部署名稱**：*模型部署的有效名稱*
-    - **部署類型**：標準
-    - **自動更新版本：** 啟用
-    - **模型版本**：*選取最新的可用版本*
-    - **已連線的 AI 資源**：*選取您的 Azure OpenAI 資源連線*
-    - **每分鐘權杖速率限制 (千)**：1K
-    - **內容篩選**：DefaultV2
-    - **啟用動態配額**：停用
-
-    > **注意**：減少 TPM 有助於避免過度使用您正在使用的訂用帳戶中的可用配額。 1,000 TPM 應該足以供本練習中使用的資料使用。 如果您的可用配額比這個數字低，您還是可以完成練習，但如果超過速率限制，可能會遇到錯誤。
-
-1. 等待部署完成。
+1. 選取 [建立]****，並等待您的專案建立完畢，這包括您選取的 gpt-4 模型部署。
+1. 在左側瀏覽窗格中選取 [概觀]****，以查看專案的主頁面。
+1. 在 [端點和金鑰]**** 區域中，確認已選取 **Azure AI Foundry** 程式庫，並檢視 **Azure AI Foundry 專案端點**。
+1. 將端點**儲存**在記事本中。 請使用此端點在用戶端應用程式中連線到您的專案。
 
 ### 連接 Application Insights
 
@@ -80,9 +61,6 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 
 首先，擷取為了與您的模型互動而要驗證的必要資訊。 然後，您將存取 Azure Cloud Shell 並更新設定，以將提供的提示傳送至您自己的已部署模型。
 
-1. 在 Azure AI Foundry 入口網站中，檢視專案的**概觀**頁面。
-1. 在 [專案詳細資料]**** 區域中，記下 [專案連接字串]****。
-1. 將字串**儲存**在記事本中。 您將使用此連接字串連線到用戶端應用程式中的專案。
 1. 開啟一個新的瀏覽器索引標籤（保持 Azure AI Foundry 入口網站在現有索引標籤中開啟）。
 1. 在新索引標籤中，瀏覽到 `https://portal.azure.com` 的 [Azure 入口網站](https://portal.azure.com)；如果出現提示，請使用您的 Azure 認證登入。
 1. 使用頁面頂部搜尋欄右側的 **[\>_]** 按鈕在 Azure 入口網站中建立一個新的 Cloud Shell，並選擇 ***PowerShell 環境*** (訂用帳戶中沒有儲存體)。
@@ -112,7 +90,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
     ```
    python -m venv labenv
    ./labenv/bin/Activate.ps1
-   pip install python-dotenv azure-identity azure-ai-projects azure-ai-inference azure-monitor-opentelemetry
+   pip install python-dotenv openai azure-identity azure-ai-projects azure-ai-inference azure-monitor-opentelemetry
     ```
 
 1. 輸入以下命令，開啟已提供的設定檔：
@@ -125,7 +103,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
 
 1. 在程式碼檔案中：
 
-    1. 將 **your_project_connection_string** 預留位置替換為專案的連接字串（從 Azure AI Foundry 入口網站中的專案**概觀**頁面複製）。
+    1. 在程式碼檔案中，以專案的端點 (從 Azure AI Foundry 入口網站中的專案 [概觀]**** 頁面複製) 取代 **your_project_endpoint** 預留位置。
     1. 將 **your_model_deployment** 預留位置替換為您指派給 GPT-4o 模型部署的名稱（預設為 `gpt-4o`）。
 
 1. *取代預留位置後*，在程式碼編輯器中使用 **CTRL+S** 命令或**按下滑鼠右鍵 > [儲存]** 來**儲存變更**，然後使用 **CTRL+Q** 命令或**按下滑鼠右鍵 > [結束]** 來關閉程式碼編輯器，同時保持 Cloud Shell 命令列開啟。
@@ -140,7 +118,18 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
    code start-prompt.py
     ```
 
-1. 在程式碼編輯器下的 Cloud Shell 命令列窗格中，輸入下列命令來**執行指令碼**：
+1. 在 Cloud Shell 命令行窗格中，輸入下列命令以登錄 Azure。
+
+    ```
+   az login
+    ```
+
+    **<font color="red">即使 Cloud Shell 工作階段已經過驗證，您還是必須登錄 Azure。</font>**
+
+    > **注意**：在大部分情況下，只要使用 *az 登入*即可。 不過，如果您在多個租用戶中擁有訂用帳戶，您可能需要使用 *--tenant* 參數指定租用戶。 如需詳細資料，請參閱[使用 Azure CLI 以互動方式登入 Azure](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)。
+    
+1. 出現提示時，請遵循指示，在新的索引標籤中開啟登入頁面，然後輸入所提供的驗證碼和您的 Azure 認證。 接著，在命令行中完成登入流程。如果出現提示，請選取包含 Azure AI Foundry 中樞的訂用帳戶。
+1. 登入之後，請輸入下列命令以執行應用程式：
 
     ```
    python start-prompt.py
