@@ -91,7 +91,7 @@ Application Insights 現在已連線到您的專案，並開始收集資料以�
     ```
    python -m venv labenv
    ./labenv/bin/Activate.ps1
-   pip install python-dotenv openai azure-identity azure-ai-projects azure-ai-inference azure-monitor-opentelemetry
+   pip install python-dotenv openai azure-identity azure-ai-projects opentelemetry-instrumentation-openai-v2 azure-monitor-opentelemetry
     ```
 
 1. 輸入以下命令，開啟已提供的設定檔：
