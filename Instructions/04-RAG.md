@@ -124,16 +124,59 @@ lab:
 
 您現在會執行指令碼來內嵌和預先處理資料、建立內嵌，以及建置向量儲存和索引，最後讓您可以有效實作 RAG 系統。
 
-1. 執行下列命令以**檢視已提供的指令碼**：
+1. 執行下列命令以**編輯已提供的指令碼**：
 
     ```powershell
    code RAG.py
     ```
 
-1. 檢閱指令碼，並注意該指令碼會使用.csv 檔案，檔案以酒店評論作為基礎資料。 您可以執行命令 `download app_hotel_reviews.csv` 並開啟此檔案，以查看檔案中的內容。
+1. 在指令碼中，尋找 **# 初始化要用來從 LangChain 整合套件使用的元件**。 在此註解下方，貼上下列代碼：
+
+    ```python
+   # Initialize the components that will be used from LangChain's suite of integrations
+   llm = AzureChatOpenAI(azure_deployment=llm_name)
+   embeddings = AzureOpenAIEmbeddings(azure_deployment=embeddings_name)
+   vector_store = InMemoryVectorStore(embeddings)
+    ```
+
+1. 檢閱指令碼，並注意該指令碼會使用.csv 檔案，檔案以酒店評論作為基礎資料。 您可以在命令列窗格中執行命令 `download app_hotel_reviews.csv` 並開啟此檔案，查看檔案中的內容。
+1. 接下來，尋找 **# 將文件分割成區塊，以用於內嵌和向量儲存**。 在此註解下方，貼上下列代碼：
+
+    ```python
+   # Split the documents into chunks for embedding and vector storage
+   text_splitter = RecursiveCharacterTextSplitter(
+       chunk_size=200,
+       chunk_overlap=20,
+       add_start_index=True,
+   )
+   all_splits = text_splitter.split_documents(docs)
+    
+   print(f"Split documents into {len(all_splits)} sub-documents.")
+    ```
+
+    上述程式碼會將一組大型文件分割成較小的區塊。 這很重要，因為許多內嵌模型 (例如用於語意搜尋或向量資料庫的模型) 都有權杖限制，在較短的文字上執行效果較佳。
+
+1. 接下來，尋找 **# 內嵌每個文字區塊的內容，並將這些內容插入向量存放區**。 在此註解下方，貼上下列代碼：
+
+    ```python
+   # Embed the contents of each text chunk and insert these embeddings into a vector store
+   document_ids = vector_store.add_documents(documents=all_splits)
+    ```
+
+1. 接下來，尋找 **# 依據使用者輸入，從向量存放區抓取相關文件**。 在此註解下方貼上下列程式碼，觀察正確的識別：
+
+    ```python
+   # Retrieve relevant documents from the vector store based on user input
+   retrieved_docs = vector_store.similarity_search(question, k=10)
+   docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
+    ```
+
+    上述程式碼會搜尋向量存放區中，與使用者輸入問題最為相近的文件。 系統會使用與文件相同的嵌入模型，將問題轉換成向量。 接著，系統會比較此向量與所有已儲存的向量，並抓取最相近的向量。
+
+1. 儲存您的變更。
 1. 在命令列中輸入下列命令，以**執行指令碼**：
 
-    ```
+    ```powershell
    python RAG.py
     ```
 
