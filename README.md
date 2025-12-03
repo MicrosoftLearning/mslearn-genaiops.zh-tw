@@ -1,3 +1,5 @@
+**⚠️ This GitHub repo will retire on 30th December 2025.**
+
 # GenAIOps 練習
 
 此存放庫包含指示和資產，可支援 [GenAIOps 上的 Microsoft Learn 學習路徑](https://learn.microsoft.com/en-us/training/paths/create-custom-copilots-ai-studio/)的實際練習。
